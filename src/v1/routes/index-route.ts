@@ -1,9 +1,7 @@
 import { Router } from "express";
-
+import flightController from "../../controllers/passengerFly.js";
 const router = Router();
 
-router.get('/api', (req, res)=>{
-    res.json({ message: 'Welcome to api' })
-})
+router.get("/:id/passengers", flightController);
 
 export default router;

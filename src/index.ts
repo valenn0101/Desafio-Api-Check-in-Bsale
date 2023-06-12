@@ -1,14 +1,7 @@
-import express from "express";
-import apiRoutes from "./v1/routes/index-route.js";
+import app from "./app.js";
 
-const app = express();
+const PORT = 3000;
 
-app.get("/", (req, res) => {
-  res.send("Hello World!");
-  console.log("Hello Worlda!");
-});
-app.use("/", apiRoutes);
-
-app.listen(3000, () => {
-  console.log("Example app listening on port 3000!");
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT} 🚀🚀`);
 });
