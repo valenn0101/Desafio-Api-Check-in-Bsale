@@ -1,7 +1,7 @@
 import prisma from "../config/prisma.js";
 import {
   type BoardingData,
-  type purchaseId
+  type PassangerData
 } from "../interfaces/flightInterface.js";
 
 import { type purchase } from "../interfaces/dbInterfaces.js";
@@ -16,37 +16,49 @@ async function getFlightData(flightId: number): Promise<BoardingData | null> {
   return transformKeysToCamelCase(flighData);
 }
 
-async function getPassengerInfo(passengerId: number): Promise<any> {
+async function getPassengerInfo(passengerId: number): Promise<PassangerData> {
   const passangerInfo: any = await prisma.passenger.findUnique({
     where: {
       passenger_id: passengerId
     }
   });
+
   return transformKeysToCamelCase(passangerInfo);
 }
+
 async function getTicketsData(purchaseId: number): Promise<purchase | boolean> {
   const purchase = await prisma.purchase.findUnique({
     where: { purchase_id: purchaseId },
     include: { boarding_pass: true }
   });
   if (purchase == null) return false;
-
-  const flightId = purchase.boarding_pass[0].flight_id;
-  const flightInfo = await getFlightData(flightId);
-  const flightDetails = transformKeysToCamelCase(flightInfo);
-
-  const passengerInfos = [];
-  for (const boardingPass of purchase.boarding_pass) {
-    const passengerId = boardingPass.passenger_id;
-    const passengerInfo = await getPassengerInfo(passengerId);
-    passengerInfos.push(transformKeysToCamelCase(passengerInfo));
-    console.log("Passenger Info:", transformKeysToCamelCase(passengerInfo));
-  }
-
+  const [flightId] = purchase.boarding_pass.map((bp) => bp.flight_id);
+  const flightDetails = transformKeysToCamelCase(await getFlightData(flightId));
+  const passengerIds = purchase.boarding_pass.map((bp) => bp.passenger_id);
+  const passengerInfo = await Promise.all(
+    passengerIds.map(async (id) =>
+      transformKeysToCamelCase(await getPassengerInfo(id))
+    )
+  );
+  const boardingPassData = purchase.boarding_pass.map((bp) => {
+    const passenger = passengerInfo.find(
+      (pi) => pi.passengerId === bp.passenger_id
+    );
+    return {
+      passengerId: passenger.passengerId,
+      dni: passenger.dni,
+      name: passenger.name,
+      age: passenger.age,
+      country: passenger.country,
+      boardingPassId: bp.boarding_pass_id,
+      purchaseId: bp.purchase_id,
+      seatTypeId: bp.seat_type_id,
+      seatId: bp.seat_id
+    };
+  });
   return {
     ...flightDetails,
-    boardingPass: purchase.boarding_pass.map(transformKeysToCamelCase),
-    passenger: passengerInfos
+    passenger: boardingPassData
   };
 }
 

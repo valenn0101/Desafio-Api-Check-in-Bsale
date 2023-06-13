@@ -1,7 +1,3 @@
-interface purchaseId {
-  code: number;
-}
-
 interface BoardingData {
   flightId: number;
   takeOffDateTime: number;
@@ -12,4 +8,12 @@ interface BoardingData {
   passengers?: [];
 }
 
-export type { purchaseId, BoardingData };
+interface PassangerData {
+  passengerId: number;
+  dni: string;
+  name: string;
+  age: number;
+  country: string;
+}
+
+export type { BoardingData, PassangerData };
