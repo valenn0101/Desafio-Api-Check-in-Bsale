@@ -9,7 +9,7 @@ interface BoardingData {
   landingDateTime: number;
   landingAirport: string;
   airplaneId: number;
-  passengers: [];
+  passengers?: [];
 }
 
 export type { purchaseId, BoardingData };
