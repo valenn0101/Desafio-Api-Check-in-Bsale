@@ -16,6 +16,14 @@ async function getFlightData(flightId: number): Promise<BoardingData | null> {
   return transformKeysToCamelCase(flighData);
 }
 
+async function getPassengerInfo(passengerId: number): Promise<any> {
+  const passangerInfo: any = await prisma.passenger.findUnique({
+    where: {
+      passenger_id: passengerId
+    }
+  });
+  return transformKeysToCamelCase(passangerInfo);
+}
 async function getTicketsData(purchaseId: number): Promise<purchase | boolean> {
   const purchase = await prisma.purchase.findUnique({
     where: { purchase_id: purchaseId },
@@ -23,11 +31,23 @@ async function getTicketsData(purchaseId: number): Promise<purchase | boolean> {
   });
   if (purchase == null) return false;
 
-  const boardingPasses = purchase.boarding_pass.map(transformKeysToCamelCase);
   const flightId = purchase.boarding_pass[0].flight_id;
   const flightInfo = await getFlightData(flightId);
   const flightDetails = transformKeysToCamelCase(flightInfo);
-  return { ...flightDetails, boardingPass: boardingPasses };
+
+  const passengerInfos = [];
+  for (const boardingPass of purchase.boarding_pass) {
+    const passengerId = boardingPass.passenger_id;
+    const passengerInfo = await getPassengerInfo(passengerId);
+    passengerInfos.push(transformKeysToCamelCase(passengerInfo));
+    console.log("Passenger Info:", transformKeysToCamelCase(passengerInfo));
+  }
+
+  return {
+    ...flightDetails,
+    boardingPass: purchase.boarding_pass.map(transformKeysToCamelCase),
+    passenger: passengerInfos
+  };
 }
 
 export { getTicketsData };
