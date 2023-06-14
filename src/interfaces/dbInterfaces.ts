@@ -11,6 +11,14 @@ interface BoardingPass {
   seat_type_id: number;
   seat_id: number | null;
   flight_id: number;
+  airplane_id?: number;
 }
 
-export type { Purchase, BoardingPass };
+interface Airplane {
+  airplane_id: number;
+  name: string;
+  flight?: Flight[];
+  seat?: Seat[];
+}
+
+export type { Purchase, BoardingPass, Airplane };

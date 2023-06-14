@@ -15,6 +15,7 @@ interface Flight {
   landing_date_time: number;
   landing_airport: string;
   airplane_id: number;
+  airplaneId?: number;
 }
 
 interface PassengerData {
@@ -36,6 +37,7 @@ interface FlightDetails {
   name: string;
   age: number;
   country: string;
+  airplaneId: number;
 }
 
 export type { BoardingData, PassengerData, Flight, FlightDetails };

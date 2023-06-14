@@ -7,6 +7,7 @@ import {
 import transformKeysToCamelCase from "../utils/snakeToCamel.js";
 import { getFlightData } from "./flightData.js";
 import { getPassengerInfo } from "./passengerInfo.js";
+import { getAirplaneData } from "./airplaneData.js";
 
 async function getTicketsData(
   purchaseId: number
@@ -23,25 +24,33 @@ async function getTicketsData(
     getPassengerInfoForBoardingPasses(purchaseData.boarding_pass)
   ]);
 
-  console.log(flightDetails, passengerInfo);
+  const whatIsThePlane = flightDetails.theAirplane;
+  console.log("The airplane is: ", whatIsThePlane);
 
   const boardingPassData = createBoardingPassData(
     purchaseData.boarding_pass,
     // @ts-expect-error idk
     passengerInfo
   );
-
   return {
-    ...flightDetails,
+    ...flightDetails.flightDetails,
     // @ts-expect-error idk
     passengers: boardingPassData
   };
 }
 
-async function getFlightDetails(purchaseData: any): Promise<FlightDetails> {
+async function getFlightDetails(
+  purchaseData: any
+): Promise<{ theAirplane: any; flightDetails: FlightDetails }> {
   const [flightId] = purchaseData.boarding_pass.map((bp: any) => bp.flight_id);
   const flightDetails = await getFlightData(flightId);
-  return transformKeysToCamelCase(flightDetails);
+  const avionInfo = await getAirplaneData(flightDetails.airplaneId);
+  const theAirplane = avionInfo;
+  flightDetails.airplaneId = purchaseData.airplaneId;
+  return {
+    theAirplane,
+    flightDetails: transformKeysToCamelCase(flightDetails)
+  };
 }
 
 async function getPassengerInfoForBoardingPasses(
