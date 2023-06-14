@@ -1,5 +1,5 @@
 import { type Request, type Response } from "express";
-import { getTicketsData } from "../services/baseService.js";
+import { getTicketsData } from "../services/ticketsData.js";
 
 const flightController = async (req: Request, res: Response): Promise<any> => {
   const flightId: any = Number(req.params.id);
