@@ -99,9 +99,9 @@ function airplaneMatrix(airplane: any): any {
   const $airplane1 = airplane1;
   const $airplane2 = airplane2;
   if (airplane === 1) {
-    return generateSeatMatrix($airplane1);
+    return JSON.stringify(generateSeatMatrix($airplane1));
   } else {
-    return generateSeatMatrix($airplane2);
+    return JSON.stringify(generateSeatMatrix($airplane2));
   }
 }
 

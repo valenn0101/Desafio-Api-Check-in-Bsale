@@ -7,7 +7,7 @@ function findSeats(seatIds: number[]): boolean {
 }
 
 // Generates a seat matrix based on the airplane model
-async function generateSeatMatrix(airplane: any): any[] {
+async function generateSeatMatrix(airplane: any): Promise<any[]> {
   const airplaneId = airplane.airplane_id;
   const seatList = await prisma.seat.findMany({
     where: {
@@ -27,7 +27,11 @@ async function generateSeatMatrix(airplane: any): any[] {
 
       for (let row = 0; row < group.rows; row++) {
         if (seatIndex < seatList.length) {
-          seatsInRow.fill(seatList[seatIndex], 0, group.columns);
+          seatsInRow.fill(
+            JSON.parse(JSON.stringify(seatList[seatIndex])),
+            0,
+            group.columns
+          );
           seatIndex++;
         } else {
           break;
