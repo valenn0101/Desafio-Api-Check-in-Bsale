@@ -1,5 +1,6 @@
 const airplane1 = {
   type: "AirNova-660",
+  airplane_id: 1,
   classes: [
     {
       name: "Primera Clase",
@@ -31,6 +32,7 @@ const airplane1 = {
 
 const airplane2 = {
   type: "AirMax-720neo",
+  airplane_id: 2,
   classes: [
     {
       name: "Primera Clase",

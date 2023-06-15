@@ -8,6 +8,8 @@ import transformKeysToCamelCase from "../utils/snakeToCamel.js";
 import { getFlightData } from "./flightData.js";
 import { getPassengerInfo } from "./passengerInfo.js";
 import { getAirplaneData } from "./airplaneData.js";
+import { findSeats, generateSeatMatrix } from "./seatSelector.js";
+import { airplane1, airplane2 } from "../models/AirplanesModels.js";
 
 async function getTicketsData(
   purchaseId: number
@@ -25,13 +27,25 @@ async function getTicketsData(
   ]);
 
   const whatIsThePlane = flightDetails.theAirplane;
-  console.log("The airplane is: ", whatIsThePlane);
+  console.log("The airplane is: ", whatIsThePlane.name);
+
+  console.log(await airplaneMatrix(whatIsThePlane.airplaneId));
 
   const boardingPassData = createBoardingPassData(
     purchaseData.boarding_pass,
     // @ts-expect-error idk
     passengerInfo
   );
+
+  const seatIds = boardingPassData.map((passenger) => passenger.seatId);
+  console.log("Seat IDs: ", seatIds);
+
+  const existingSeats = findSeats(seatIds);
+  console.log("Seats exist: ", existingSeats);
+
+  // const seatName = passengerInfo.theSeatIs;
+  // console.log("Seat name: ", seatName);
+
   return {
     ...flightDetails.flightDetails,
     // @ts-expect-error idk
@@ -55,13 +69,15 @@ async function getFlightDetails(
 
 async function getPassengerInfoForBoardingPasses(
   boardingPasses: BoardingPass[]
-): Promise<BoardingPass[]> {
+): Promise<{ passengerInfo: BoardingPass[] }> {
   const passengerIds = boardingPasses.map((bp) => bp.passenger_id);
   const passengerInfo = await Promise.all(
     passengerIds.map(async (id) =>
       transformKeysToCamelCase(await getPassengerInfo(id))
     )
   );
+  // const seatInfo = await readSeatType(boardingPasses[0].seat_type_id);
+  // const theSeatIs = seatInfo;
   return passengerInfo;
 }
 
@@ -77,6 +93,16 @@ function createBoardingPassData(
     seatTypeId: bp.seat_type_id,
     seatId: bp.seat_id
   }));
+}
+
+function airplaneMatrix(airplane: any): any {
+  const $airplane1 = airplane1;
+  const $airplane2 = airplane2;
+  if (airplane === 1) {
+    return generateSeatMatrix($airplane1);
+  } else {
+    return generateSeatMatrix($airplane2);
+  }
 }
 
 export { getTicketsData };
