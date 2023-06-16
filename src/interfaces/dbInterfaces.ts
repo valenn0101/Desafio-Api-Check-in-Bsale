@@ -20,5 +20,12 @@ interface Airplane {
   flight?: Flight[];
   seat?: Seat[];
 }
+interface Seat {
+  seat_id: number;
+  seat_column: string;
+  seat_row: number;
+  seat_type_id: number;
+  airplane_id: number;
+}
 
-export type { Purchase, BoardingPass, Airplane };
+export type { Purchase, BoardingPass, Airplane, Seat };

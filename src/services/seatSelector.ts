@@ -1,4 +1,5 @@
 import prisma from "../config/prisma.js";
+import { type Seat } from "src/interfaces/dbInterfaces.js";
 
 // Consulta si existe un asiento = null
 // en el litado de pasajeros de un boleto
@@ -6,45 +7,28 @@ function findSeats(seatIds: number[]): boolean {
   return seatIds.some((seatId) => seatId === null);
 }
 
-// Generates a seat matrix based on the airplane model
-async function generateSeatMatrix(airplane: any): Promise<any[]> {
-  const airplaneId = airplane.airplane_id;
+// Genera una matriz de asientos en base al modelo de avion
+async function generateSeats(airplaneId: number): Promise<Seat[][]> {
   const seatList = await prisma.seat.findMany({
-    where: {
-      airplane_id: airplaneId
-    },
-    include: {
-      boarding_pass: true
-    }
+    where: { airplane_id: airplaneId }
   });
-  const seatMatrix = [];
-  let seatIndex = 0;
 
-  for (const classInfo of airplane.classes) {
-    for (const group of classInfo.groups) {
-      const seatsInGroup = [];
-      const seatsInRow = new Array(group.columns).fill(null);
+  const maxRows = Math.max(...seatList.map((seat) => seat.seat_row));
+  const maxColumns = Math.max(
+    ...seatList.map((seat) => seat.seat_column.charCodeAt(0) - 65)
+  );
 
-      for (let row = 0; row < group.rows; row++) {
-        if (seatIndex < seatList.length) {
-          seatsInRow.fill(
-            JSON.parse(JSON.stringify(seatList[seatIndex])),
-            0,
-            group.columns
-          );
-          seatIndex++;
-        } else {
-          break;
-        }
+  const seats: Seat[][] = Array.from({ length: maxRows }).map(() =>
+    Array(maxColumns).fill(null)
+  );
 
-        seatsInGroup.push([...seatsInRow]);
-      }
+  seatList.forEach((seat) => {
+    const rowIndex = seat.seat_row - 1;
+    const columnIndex = seat.seat_column.charCodeAt(0) - 65;
+    seats[rowIndex][columnIndex] = seat;
+  });
 
-      seatMatrix.push(seatsInGroup, []);
-    }
-  }
-
-  return seatMatrix;
+  return seats;
 }
 
-export { findSeats, generateSeatMatrix };
+export { findSeats, generateSeats };
