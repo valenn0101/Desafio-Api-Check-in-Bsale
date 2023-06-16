@@ -22,6 +22,7 @@ interface Airplane {
 }
 interface Seat {
   seat_id: number;
+  seatId?: number | any;
   seat_column: string;
   seat_row: number;
   seat_type_id: number;
