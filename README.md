@@ -1,9 +1,3 @@
-
-# Challenge Simulación check-in Aerolínea
-
-Bienvenidos! Aqui una breve descripcion del backend de mi app
-
-
 # Challenge Simulación check-in Aerolínea
 
 Bienvenidos! Aqui una breve descripcion del backend de mi app
