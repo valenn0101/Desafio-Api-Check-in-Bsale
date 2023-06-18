@@ -27,6 +27,8 @@ Si deseas ejecutar la API de manera local, sigue estos pasos:
 
 La API también está disponible en Render. Puedes acceder a ella mediante la siguiente URL: [https://api-airlines.onrender.com/flights/27/passengers](https://api-airlines.onrender.com/flights/27/passengers)
 
+![Captura de pantalla (675)](https://github.com/valenn0101/Desafio-Api-Check-in-Bsale/assets/105892117/24887fb5-73ea-45a7-9772-aa031c0e46da)
+
     
 ## Explicacion de la solucion
 
@@ -62,7 +64,7 @@ Aclaracion: Si ejecutamos las mismas funciones con el mismo grupo devolvera dife
 
 ## Algunas tecnologias usadas son:
 
-1) Typescript: Este lenguaje es el superset mas popular para JavaScript. Ademas de permitir detectar y corregir errores durante la compilacion el uso de interfaces y clases me ayudó mucho a controlar mi codigo y mantener un clean code.
+1) Typescript: Este lenguaje es el superset mas popular para JavaScript. Ademas de permitir detectar y corregir errores durante la compilacion el uso de interfaces y clases me ayudó mucho a controlar mi codigo y mantener un clean code. Es una tecnologia que estoy aprendiendo aun, pero las posibilidades que agrega a JavaScript son muy buenas.
 
 2) Prisma: Un ORM que facilita la interaccion con bases de datos, generar modelos automaticos y proporcionar mayor informacion acerca de errores.
 
