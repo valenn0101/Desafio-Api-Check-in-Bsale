@@ -30,6 +30,11 @@ interface PassengerData {
   seatTypeId?: number;
   seatId?: number;
 }
+interface PassengerCases {
+  allNull: PassengerData[];
+  someNull: PassengerData[];
+  allDefined: PassengerData[];
+}
 
 interface FlightDetails {
   flightId: number;
@@ -40,4 +45,10 @@ interface FlightDetails {
   airplaneId: number;
 }
 
-export type { BoardingData, PassengerData, Flight, FlightDetails };
+export type {
+  BoardingData,
+  PassengerData,
+  Flight,
+  FlightDetails,
+  PassengerCases
+};
