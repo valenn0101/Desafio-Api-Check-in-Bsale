@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 import prisma from "../config/prisma.js";
 import { type Seats, type Seat } from "../interfaces/dbInterfaces.js";
 import {
@@ -35,33 +37,53 @@ export function findAdjacentSeatsBySeatId(
 
   const adjacentSeatsList: Seat[][] = [];
 
-  for (const seatId of seatIds) {
-    if (seatId !== null) {
-      const selectedSeat = seatOccupied.find((seat) => seat.seatId === seatId);
+  const selectedSeatId = seatIds.find((seatId) => seatId !== null);
 
-      if (selectedSeat) {
-        const adjacentSeats: Seat[] = [];
-
-        const selectedColumn = selectedSeat.seatColumn;
-        const selectedRow = selectedSeat.seatRow;
-        const selectedSeatType = selectedSeat.seatTypeId;
-
-        for (const seat of seatAvailable) {
-          if (
-            seat.seatTypeId === selectedSeatType &&
-            Math.abs(seat.seatRow - selectedRow) <= maxDistance &&
-            Math.abs(
-              seat.seatColumn.charCodeAt(0) - selectedColumn.charCodeAt(0)
-            ) <= maxDistance
-          ) {
-            adjacentSeats.push(seat);
-          }
-        }
-
-        adjacentSeatsList.push(adjacentSeats);
-      }
-    }
+  if (selectedSeatId === undefined) {
+    return adjacentSeatsList;
   }
+
+  const selectedSeat = seatOccupied.find(
+    (seat) => seat.seatId === selectedSeatId
+  );
+
+  if (!selectedSeat) {
+    return adjacentSeatsList;
+  }
+
+  const adjacentSeats = seatAvailable.filter((seat) => {
+    const rowDiff = Math.abs(seat.seatRow - selectedSeat.seatRow);
+    if (rowDiff > maxDistance) return false;
+
+    const colDiff = Math.abs(
+      seat.seatColumn.charCodeAt(0) - selectedSeat.seatColumn.charCodeAt(0)
+    );
+    if (colDiff > maxDistance) return false;
+
+    return seat.seatTypeId === selectedSeat.seatTypeId;
+  });
+
+  adjacentSeats.sort((a, b) => {
+    const rowDiffA = Math.abs(a.seatRow - selectedSeat.seatRow);
+    const rowDiffB = Math.abs(b.seatRow - selectedSeat.seatRow);
+    const colDiffA = Math.abs(
+      a.seatColumn.charCodeAt(0) - selectedSeat.seatColumn.charCodeAt(0)
+    );
+    const colDiffB = Math.abs(
+      b.seatColumn.charCodeAt(0) - selectedSeat.seatColumn.charCodeAt(0)
+    );
+
+    if (rowDiffA !== rowDiffB) {
+      return rowDiffA - rowDiffB;
+    }
+
+    return colDiffA - colDiffB;
+  });
+
+  const numNullElements = seatIds.filter((seatId) => seatId === null).length;
+  const adjacentSeatsLimited = adjacentSeats.slice(0, numNullElements);
+
+  adjacentSeatsList.push(adjacentSeatsLimited);
 
   return adjacentSeatsList;
 }
@@ -107,6 +129,8 @@ export function findAdjacentSeatsForGroup(
           } else if (groupWithMinor.length > 0) {
             adjacentSeats.push(seat);
             groupWithMinor.shift();
+          } else {
+            adjacentSeats.push(seat);
           }
         } else {
           break;

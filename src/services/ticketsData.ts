@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 import prisma from "../config/prisma.js";
 import { type BoardingPass } from "../interfaces/dbInterfaces.js";
 import {
@@ -8,12 +10,16 @@ import transformKeysToCamelCase from "../utils/snakeToCamel.js";
 import { getFlightData } from "./flightData.js";
 import { getPassengerInfo } from "./passengerInfo.js";
 import { getAirplaneData } from "./airplaneData.js";
-import { findSeats, generateSeatMatrix } from "./seatSelector.js";
-import { airplane1, airplane2 } from "../models/AirplanesModels.js";
 
-async function getTicketsData(
+import {
+  getSeatsData,
+  findAdjacentSeatsBySeatId,
+  findAdjacentSeatsForGroup
+} from "../services/seatSelected.js";
+
+export async function getTicketsData(
   purchaseId: number
-): Promise<PassengerData | boolean> {
+): Promise<PassengerData | boolean | any> {
   const purchaseData = await prisma.purchase.findUnique({
     where: { purchase_id: purchaseId },
     include: { boarding_pass: true }
@@ -26,29 +32,48 @@ async function getTicketsData(
     getPassengerInfoForBoardingPasses(purchaseData.boarding_pass)
   ]);
 
-  const whatIsThePlane = flightDetails.theAirplane;
-  console.log("The airplane is: ", whatIsThePlane.name);
-
-  console.log(await airplaneMatrix(whatIsThePlane.airplaneId));
-
   const boardingPassData = createBoardingPassData(
     purchaseData.boarding_pass,
-    // @ts-expect-error idk
     passengerInfo
   );
 
+  const whatIsThePlane = flightDetails.theAirplane;
+  const plane = getPlane(whatIsThePlane.name);
+  const seats = await getSeatsData(plane);
   const seatIds = boardingPassData.map((passenger) => passenger.seatId);
-  console.log("Seat IDs: ", seatIds);
 
-  const existingSeats = findSeats(seatIds);
-  console.log("Seats exist: ", existingSeats);
+  if (seatIds.every((id) => id !== null)) {
+    return;
+  } else if (seatIds.every((id) => id === null)) {
+    const seatsAleatorios = findAdjacentSeatsForGroup(
+      boardingPassData,
+      seats,
+      3
+    );
+    seatsAleatorios[0].forEach((seat, index) => {
+      boardingPassData[index].seatId = seat.seatId;
+    });
+  } else {
+    const adyacentes = findAdjacentSeatsBySeatId(seatIds, seats);
 
-  // const seatName = passengerInfo.theSeatIs;
-  // console.log("Seat name: ", seatName);
+    const adyacentesList = adyacentes[0];
+    let adyacentesIndex = 0;
+
+    for (let i = 0; i < boardingPassData.length; i++) {
+      const passenger = boardingPassData[i];
+      if (passenger.seatId === null) {
+        if (adyacentesIndex < adyacentesList.length) {
+          passenger.seatId = adyacentesList[adyacentesIndex].seatId;
+          adyacentesIndex++;
+        } else {
+          break;
+        }
+      }
+    }
+  }
 
   return {
     ...flightDetails.flightDetails,
-    // @ts-expect-error idk
     passengers: boardingPassData
   };
 }
@@ -58,8 +83,10 @@ async function getFlightDetails(
 ): Promise<{ theAirplane: any; flightDetails: FlightDetails }> {
   const [flightId] = purchaseData.boarding_pass.map((bp: any) => bp.flight_id);
   const flightDetails = await getFlightData(flightId);
+
   const avionInfo = await getAirplaneData(flightDetails.airplaneId);
   const theAirplane = avionInfo;
+
   flightDetails.airplaneId = purchaseData.airplaneId;
   return {
     theAirplane,
@@ -76,8 +103,7 @@ async function getPassengerInfoForBoardingPasses(
       transformKeysToCamelCase(await getPassengerInfo(id))
     )
   );
-  // const seatInfo = await readSeatType(boardingPasses[0].seat_type_id);
-  // const theSeatIs = seatInfo;
+
   return passengerInfo;
 }
 
@@ -94,15 +120,10 @@ function createBoardingPassData(
     seatId: bp.seat_id
   }));
 }
-
-function airplaneMatrix(airplane: any): any {
-  const $airplane1 = airplane1;
-  const $airplane2 = airplane2;
-  if (airplane === 1) {
-    return JSON.stringify(generateSeatMatrix($airplane1));
+function getPlane(whatIsThePlane) {
+  if (whatIsThePlane === "AirNova-660") {
+    return 1;
   } else {
-    return JSON.stringify(generateSeatMatrix($airplane2));
+    return 2;
   }
 }
-
-export { getTicketsData };

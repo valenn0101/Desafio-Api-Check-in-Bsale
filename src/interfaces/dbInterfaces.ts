@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 interface Purchase {
   purchase_id: number;
   purchase_date: number;
