@@ -4,10 +4,13 @@ import express, {
   type Response,
   type NextFunction
 } from "express";
-
 import cors from "cors";
 import bodyParser from "body-parser";
 import router from "./v1/routes/index-route.js";
+import {
+  connectToDatabase,
+  disconnectFromDatabase
+} from "./config/controlConecction.js";
 
 class App {
   public app: Application;
@@ -29,6 +32,17 @@ class App {
     this.app.use(bodyParser.json());
   }
 
+  private async startServer(): Promise<void> {
+    try {
+      await connectToDatabase();
+      this.app.listen(3030, () => {
+        console.log("Servidor Express iniciado correctamente");
+      });
+    } catch (error) {
+      console.error("Error al iniciar el servidor:", error);
+    }
+  }
+
   private middlewares(): void {
     this.app.use((req: Request, res: Response, next: NextFunction) => {
       res.setHeader("Access-Control-Allow-Origin", "*");
@@ -48,6 +62,22 @@ class App {
   private router(): void {
     this.app.use("/flights", router);
   }
+
+  public async start(): Promise<void> {
+    await this.startServer();
+  }
+
+  public async stop(): Promise<void> {
+    await disconnectFromDatabase();
+  }
 }
 
-export default new App().app;
+const app = new App();
+app.start();
+
+process.on("SIGINT", async () => {
+  await app.stop();
+  process.exit();
+});
+
+export default app.app;
